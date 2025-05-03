@@ -14,6 +14,8 @@
       justify-content: center;
       align-items: center;
       text-align: center;
+    }
+    #intro {
       cursor: pointer;
     }
     #scene {
@@ -22,6 +24,7 @@
       align-items: center;
       gap: 20px;
       max-width: 90vw;
+      animation: fadeIn 1.5s forwards;
     }
     img {
       max-width: 80vw;
@@ -31,10 +34,14 @@
     audio {
       margin-top: 10px;
     }
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
   </style>
 </head>
-<body onclick="startShow()">
-  <div id="intro">в зале ровно один человек. спектакль начинается.</div>
+<body>
+  <div id="intro" onclick="startShow()">в зале ровно один человек. спектакль начинается.</div>
 
   <div id="scene">
     <div id="line"></div>
@@ -50,24 +57,32 @@
       1: { text: "«Ожидание — тоже действие.»", image: "scenes/1.jpg", audio: "scenes/1.mp3" },
       2: { text: "«Свет выключен. Тишина — часть пьесы.»", image: "scenes/2.jpg", audio: "scenes/2.mp3" },
       3: { text: "«Ты в центре кадра, даже если не знаешь об этом.»", image: "scenes/3.jpg", audio: "scenes/3.mp3" },
-      // добавь сцены до 31
+      // Добавь сцены до 31
     };
 
-    function startShow() {
-      document.body.removeEventListener("click", startShow);
+    const day = new Date().getDate();
+    const scene = scenes[day] || scenes[1];
+    const todayKey = `scene_shown_${day}`;
+
+    function showScene() {
       document.getElementById('intro').style.display = 'none';
       document.getElementById('scene').style.display = 'flex';
-
-      const day = new Date().getDate();
-      const scene = scenes[day] || scenes[1]; // если нет — покажем 1 сцену
-
       document.getElementById('line').textContent = scene.text;
       document.getElementById('image').src = scene.image;
       document.getElementById('audioSource').src = scene.audio;
       document.getElementById('audio').load();
     }
 
-    document.body.addEventListener("click", startShow);
+    function startShow() {
+      localStorage.setItem('lastSceneDate', day.toString());
+      showScene();
+    }
+
+    // Проверяем, был ли уже показ спектакль сегодня
+    const lastShown = localStorage.getItem('lastSceneDate');
+    if (lastShown === day.toString()) {
+      startShow(); // показываем сцену сразу
+    }
   </script>
 </body>
 </html>
