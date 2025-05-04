@@ -105,13 +105,6 @@
       localStorage.setItem('lastSceneDate', day.toString());
       showScene();
     }
-
-    const lastShown = localStorage.getItem('lastSceneDate');
-    if (lastShown === day.toString()) {
-      showScene(); // сразу показываем сцену
-    } else {
-      document.body.onclick = startShow; // клик по любому месту
-    }
   </script>
 </body>
 </html>
