@@ -15,9 +15,12 @@
       align-items: center;
       text-align: center;
     }
+
     #intro {
       cursor: pointer;
+      padding: 20px;
     }
+
     #scene {
       display: none;
       flex-direction: column;
@@ -26,14 +29,24 @@
       max-width: 90vw;
       animation: fadeIn 1.5s forwards;
     }
+
     img {
       max-width: 80vw;
       border-radius: 12px;
       box-shadow: 0 0 20px rgba(255,255,255,0.2);
     }
+
     audio {
       margin-top: 10px;
     }
+
+    .telegram-link {
+      color: #89f;
+      text-decoration: underline;
+      margin-top: 10px;
+      font-size: 16px;
+    }
+
     @keyframes fadeIn {
       from { opacity: 0; }
       to { opacity: 1; }
@@ -41,7 +54,7 @@
   </style>
 </head>
 <body>
-  <div id="intro" onclick="startShow()">в зале ровно один человек. спектакль начинается.</div>
+  <div id="intro">в зале ровно один человек. спектакль начинается.</div>
 
   <div id="scene">
     <div id="line"></div>
@@ -50,14 +63,27 @@
       <source id="audioSource" src="" type="audio/mpeg">
       Ваш браузер не поддерживает аудио.
     </audio>
+    <a id="telegramLink" class="telegram-link" href="" target="_blank">Открыть в Telegram</a>
   </div>
 
   <script>
     const scenes = {
-      1: { text: "«Ожидание — тоже действие.»", image: "scenes/1.jpg", audio: "scenes/1.mp3" },
-      2: { text: "«Свет выключен. Тишина — часть пьесы.»", image: "scenes/2.jpg", audio: "scenes/2.mp3" },
-      3: { text: "«Ты в центре кадра, даже если не знаешь об этом.»", image: "scenes/3.jpg", audio: "scenes/3.mp3" },
-      // Добавь сцены до 31
+      1: { 
+        text: "«Ожидание — тоже действие.»", 
+        image: "scenes/1.jpg", 
+        audio: "https://yourdomain.com/scenes/1.mp3" // заменишь на свою ссылку или t.me/...
+      },
+      2: { 
+        text: "«Свет выключен. Тишина — часть пьесы.»", 
+        image: "scenes/2.jpg", 
+        audio: "https://yourdomain.com/scenes/2.mp3" 
+      },
+      3: { 
+        text: "«Ты в центре кадра, даже если не знаешь об этом.»", 
+        image: "scenes/3.jpg", 
+        audio: "https://yourdomain.com/scenes/3.mp3" 
+      },
+      // добавляй дальше
     };
 
     const day = new Date().getDate();
@@ -67,9 +93,11 @@
     function showScene() {
       document.getElementById('intro').style.display = 'none';
       document.getElementById('scene').style.display = 'flex';
+
       document.getElementById('line').textContent = scene.text;
       document.getElementById('image').src = scene.image;
       document.getElementById('audioSource').src = scene.audio;
+      document.getElementById('telegramLink').href = scene.audio;
       document.getElementById('audio').load();
     }
 
@@ -78,10 +106,11 @@
       showScene();
     }
 
-    // Проверяем, был ли уже показ спектакль сегодня
     const lastShown = localStorage.getItem('lastSceneDate');
     if (lastShown === day.toString()) {
-      startShow(); // показываем сцену сразу
+      showScene(); // сразу показываем сцену
+    } else {
+      document.body.onclick = startShow; // клик по любому месту
     }
   </script>
 </body>
