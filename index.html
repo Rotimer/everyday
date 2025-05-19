@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-    <script src="https://cdn.jsdelivr.net/npm/tabletop@1.6.4/tabletop.min.js"></script>
+   <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
   <meta charset="UTF-8" />
   <title>Guten Tag</title>
   <style>
@@ -136,40 +136,37 @@
 
     <a id="telegramLink" class="telegram-link" href="" target="_blank">Открыть в Telegram</a>
   </div>
-
-  <script src="https://cdn.jsdelivr.net/npm/tabletop@1.6.4/tabletop.min.js"></script>
 <script>
   window.addEventListener("DOMContentLoaded", () => {
     const today = new Date();
-    const day = today.getDate().toString();
-    const sheetId = '1rGujbbXJ9FYtDxfGMauaLdKmrM6Loh83Tb-yTSAlvek';
-    let currentScene = null;
+    const day = today.getDate().toString(); // '1', '2', ..., '31'
+    const csvUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRJ2-YHp1iibcxX9r4wWqyPAnDS9cMH1-eArMTM4ZZbiG8x6WjICSqbv4t6N2Tb8pBSzkw9TKIG2qS8/pub?gid=0&single=true&output=csv";
 
-    Tabletop.init({
-      key: sheetId,
-      simpleSheet: true,
-      callback: function(data) {
+    Papa.parse(csvUrl, {
+      download: true,
+      header: true,
+      complete: function(results) {
+        const data = results.data;
         const scene = data.find(row => row["День"] === day) || data[0];
-        currentScene = scene;
+
+        document.getElementById("intro").addEventListener("click", () => {
+          document.getElementById("intro").style.display = "none";
+          document.getElementById("scene").style.display = "flex";
+
+          document.getElementById("line").textContent = `«${scene["Трек"]}»`;
+          document.getElementById("image").src = scene["Изображение"] || "https://placehold.co/600x400?text=Нет+изображения";
+          document.getElementById("audioSource").src = scene["ссылка на Аудио"];
+          document.getElementById("audio").load();
+          document.getElementById("telegramLink").href = scene["Telegram"] || scene["ссылка на Аудио"];
+        });
+      },
+      error: function(err) {
+        console.error("Ошибка загрузки CSV:", err);
+        document.getElementById("intro").textContent = "Не удалось загрузить сцену.";
       }
     });
 
-    document.getElementById("intro").addEventListener("click", () => {
-      if (!currentScene) {
-        alert("Сцена ещё загружается... попробуй чуть позже.");
-        return;
-      }
-
-      document.getElementById("intro").style.display = "none";
-      document.getElementById("scene").style.display = "flex";
-
-      document.getElementById("line").textContent = `«${currentScene["Трек"]}»`;
-      document.getElementById("image").src = currentScene["Изображение"] || "https://placehold.co/600x400?text=Нет+изображения";
-      document.getElementById("audioSource").src = currentScene["ссылка на Аудио"];
-      document.getElementById("audio").load();
-      document.getElementById("telegramLink").href = currentScene["Telegram"] || currentScene["ссылка на Аудио"];
-    });
-
+    // 🎵 Аудиоплеер
     const audio = document.getElementById("audio");
     const playPauseBtn = document.getElementById("playPauseBtn");
     const progressBar = document.getElementById("progressBar");
