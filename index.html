@@ -1,15 +1,16 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-  <meta charset="UTF-8">
-  <title>Сайт-театр</title>
+    <script src="https://cdn.jsdelivr.net/npm/tabletop@1.6.4/tabletop.min.js" defer></script>
+  <meta charset="UTF-8" />
+  <title>Guten Tag</title>
   <style>
     html, body {
       height: 100%;
       margin: 0;
       background-color: #111;
       color: #eee;
-      font-family: 'Georgia', serif;
+      font-family: "Georgia", serif;
       display: flex;
       justify-content: center;
       align-items: center;
@@ -33,11 +34,7 @@
     img {
       max-width: 80vw;
       border-radius: 12px;
-      box-shadow: 0 0 20px rgba(255,255,255,0.2);
-    }
-
-    audio {
-      margin-top: 10px;
+      box-shadow: 0 0 20px rgba(255, 255, 255, 0.2);
     }
 
     .telegram-link {
@@ -47,6 +44,67 @@
       font-size: 16px;
     }
 
+    #audioPlayer {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      margin-top: 10px;
+    }
+
+    #audioControls {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
+
+    #playPauseBtn {
+      background-color: transparent;
+      border: 2px solid #2f5943;
+      color: #2f5943;
+      font-size: 20px;
+      padding: 8px 14px;
+      border-radius: 50%;
+      cursor: pointer;
+      transition: background-color 0.3s, color 0.3s;
+    }
+
+    #playPauseBtn:hover {
+      background-color: #2f5943;
+      color: #111;
+    }
+
+    #progressContainer {
+      width: 250px;
+      height: 10px;
+      background-color: #333;
+      border-radius: 5px;
+      overflow: hidden;
+      cursor: pointer;
+      position: relative;
+    }
+
+    #progressBar {
+      width: 0%;
+      height: 100%;
+      background: linear-gradient(90deg, #1e402f, #2f5943);
+      transition: width 0.2s ease-out;
+    }
+
+    #timeDisplay {
+      font-size: 14px;
+      color: #aaa;
+    }
+
+    #volumeControl {
+      accent-color: #2f5943;
+      cursor: pointer;
+    }
+
+    audio {
+      display: none;
+    }
+
     @keyframes fadeIn {
       from { opacity: 0; }
       to { opacity: 1; }
@@ -54,57 +112,111 @@
   </style>
 </head>
 <body>
-  <div id="intro">в зале ровно один человек. спектакль начинается.</div>
+  <div id="intro">сегодня хороший день чтобы....</div>
 
   <div id="scene">
     <div id="line"></div>
-    <img id="image" src="" alt="Сцена">
-    <audio controls id="audio">
-      <source id="audioSource" src="" type="audio/mpeg">
+    <img id="image" src="" alt="Сцена" />
+    
+    <div id="audioPlayer">
+      <div id="audioControls">
+        <button id="playPauseBtn">▶</button>
+        <div id="progressContainer">
+          <div id="progressBar"></div>
+        </div>
+        <input type="range" id="volumeControl" min="0" max="1" step="0.01" value="1" />
+      </div>
+      <div id="timeDisplay">00:00 / 00:00</div>
+    </div>
+
+    <audio id="audio">
+      <source id="audioSource" src="" type="audio/mpeg" />
       Ваш браузер не поддерживает аудио.
     </audio>
+
     <a id="telegramLink" class="telegram-link" href="" target="_blank">Открыть в Telegram</a>
   </div>
 
-  <script>
-    const scenes = {
-      1: { 
-        text: "«Ожидание — тоже действие.»", 
-        image: "scenes/1.jpg", 
-        audio: "https://yourdomain.com/scenes/1.mp3" // заменишь на свою ссылку или t.me/...
-      },
-      2: { 
-        text: "«Свет выключен. Тишина — часть пьесы.»", 
-        image: "scenes/2.jpg", 
-        audio: "https://yourdomain.com/scenes/2.mp3" 
-      },
-      3: { 
-        text: "«Ты в центре кадра, даже если не знаешь об этом.»", 
-        image: "scenes/3.jpg", 
-        audio: "https://yourdomain.com/scenes/3.mp3" 
-      },
-      // добавляй дальше
-    };
+  <script src="https://cdn.jsdelivr.net/npm/tabletop@1.6.4/tabletop.min.js"></script>
+<script>
+  window.addEventListener("DOMContentLoaded", () => {
+    const today = new Date();
+    const day = today.getDate().toString();
+    const sheetId = '1rGujbbXJ9FYtDxfGMauaLdKmrM6Loh83Tb-yTSAlvek';
+    let currentScene = null;
 
-    const day = new Date().getDate();
-    const scene = scenes[day] || scenes[1];
-    const todayKey = `scene_shown_${day}`;
+    Tabletop.init({
+      key: sheetId,
+      simpleSheet: true,
+      callback: function(data) {
+        const scene = data.find(row => row["День"] === day) || data[0];
+        currentScene = scene;
+      }
+    });
 
-    function showScene() {
-      document.getElementById('intro').style.display = 'none';
-      document.getElementById('scene').style.display = 'flex';
+    document.getElementById("intro").addEventListener("click", () => {
+      if (!currentScene) {
+        alert("Сцена ещё загружается... попробуй чуть позже.");
+        return;
+      }
 
-      document.getElementById('line').textContent = scene.text;
-      document.getElementById('image').src = scene.image;
-      document.getElementById('audioSource').src = scene.audio;
-      document.getElementById('telegramLink').href = scene.audio;
-      document.getElementById('audio').load();
+      document.getElementById("intro").style.display = "none";
+      document.getElementById("scene").style.display = "flex";
+
+      document.getElementById("line").textContent = `«${currentScene["Трек"]}»`;
+      document.getElementById("image").src = currentScene["Изображение"] || "https://placehold.co/600x400?text=Нет+изображения";
+      document.getElementById("audioSource").src = currentScene["ссылка на Аудио"];
+      document.getElementById("audio").load();
+      document.getElementById("telegramLink").href = currentScene["Telegram"] || currentScene["ссылка на Аудио"];
+    });
+
+    const audio = document.getElementById("audio");
+    const playPauseBtn = document.getElementById("playPauseBtn");
+    const progressBar = document.getElementById("progressBar");
+    const progressContainer = document.getElementById("progressContainer");
+    const timeDisplay = document.getElementById("timeDisplay");
+    const volumeControl = document.getElementById("volumeControl");
+
+    playPauseBtn.addEventListener("click", () => {
+      if (audio.paused) {
+        audio.play();
+        playPauseBtn.textContent = "⏸";
+      } else {
+        audio.pause();
+        playPauseBtn.textContent = "▶";
+      }
+    });
+
+    audio.addEventListener("timeupdate", () => {
+      const percent = (audio.currentTime / audio.duration) * 100;
+      progressBar.style.width = percent + "%";
+      updateTimeDisplay();
+    });
+
+    audio.addEventListener("ended", () => {
+      playPauseBtn.textContent = "▶";
+    });
+
+    progressContainer.addEventListener("click", (e) => {
+      const rect = progressContainer.getBoundingClientRect();
+      const clickX = e.clientX - rect.left;
+      const percent = clickX / rect.width;
+      audio.currentTime = percent * audio.duration;
+    });
+
+    volumeControl.addEventListener("input", () => {
+      audio.volume = volumeControl.value;
+    });
+
+    function updateTimeDisplay() {
+      const format = (t) => {
+        const minutes = Math.floor(t / 60);
+        const seconds = Math.floor(t % 60);
+        return `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
+      };
+      timeDisplay.textContent = `${format(audio.currentTime)} / ${format(audio.duration || 0)}`;
     }
-
-    function startShow() {
-      localStorage.setItem('lastSceneDate', day.toString());
-      showScene();
-    }
-  </script>
+  });
+</script>
 </body>
 </html>
